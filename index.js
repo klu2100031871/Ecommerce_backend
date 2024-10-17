@@ -21,7 +21,7 @@ app.get("/",(req,res)=>{
 
 //Image Storage Engine
 const storage = multer.diskStorage({
-    destination: './upload/images',
+    destination: './public/images',
     filename:(req,file,cb)=>{
         return cb(null,`${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`)
     }
@@ -30,14 +30,26 @@ const storage = multer.diskStorage({
 const upload = multer({storage:storage})
 
 // Creating upload endpoint for images
-app.use('/images',express.static('upload/images'))
+app.use('/images',express.static('public/images'))
 
-app.post("/upload",upload.single('product'),(req,res)=>{
+app.post("/upload", upload.single('product'), (req, res) => {
+    // Ensure the image file is provided
+    if (!req.file) {
+        return res.status(400).json({
+            success: 0,
+            message: "No file uploaded",
+        });
+    }
+
+    // Replace 'localhost' with your backend deployment URL
+    const backendUrl = "https://ecommerce-backend-h529.onrender.com";
+
     res.json({
-        success:1,
-        image_url:`http://localhost:${port}/images/${req.file.filename}`
-    })
-})
+        success: 1,
+        image_url: `${backendUrl}/images/${req.file.filename}`,  // Use dynamic backend URL
+    });
+});
+
 
 // Schema for creating products 
 const Product = mongoose.model("Product",{
